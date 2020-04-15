@@ -5,30 +5,34 @@ import com.scholanova.ecommerce.cart.entity.CartItem;
 import com.scholanova.ecommerce.cart.exception.CartException;
 import com.scholanova.ecommerce.product.entity.Product;
 import com.scholanova.ecommerce.product.repository.ProductRepository;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
-import org.mockito.InjectMocks;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
+
+import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.BDDMockito.given;
 
-@Disabled
+@ExtendWith(MockitoExtension.class)
 class CartServiceImplTest {
 
     @Mock
     ProductRepository productRepository;
-    @InjectMocks
+
     private CartServiceImpl service;
 
-    public CartServiceImplTest(CartServiceImpl service) {
-        this.service = service;
+    @BeforeEach
+    void setUp() {
+        service = new CartServiceImpl(productRepository);
     }
 
     @Test
-    @Disabled
-    public void addProductToCart_ShouldAddTheProductToTheCart() {
+    public void addProductToCart_ShouldAddTheProductToTheCart() throws CartException {
         //given
         Cart cart = new Cart();
         Product product = Product.create("tested", "tested", 10.5f, 0.1f, "EUR");
@@ -41,7 +45,6 @@ class CartServiceImplTest {
     }
 
     @Test
-    @Disabled
     public void addProductToCart_ShouldHandleExceptions() {
         //given
         Cart cart = new Cart();
@@ -54,8 +57,7 @@ class CartServiceImplTest {
     }
 
     @Test
-    @Disabled
-    public void changeProductQuantity_ShouldChangeQuantity(){
+    public void changeProductQuantity_ShouldChangeQuantity() throws CartException {
         //given
         Cart cart = new Cart();
         Product product = Product.create("tested", "tested", 10.5f, 0.1f, "EUR");
@@ -65,11 +67,10 @@ class CartServiceImplTest {
         //when
         service.changeProductQuantity(cart, (long) 12, 3);
         //then
-        assertThat(cart.getCartItemByProductName("tested").getQuantity() == 3);
+        assertThat(cart.getCartItemByProductName("tested").getQuantity() == 6);
     }
 
     @Test
-    @Disabled
     public void changeProductQuantity_ShouldHandleExceptions(){
         //given
         Cart cart = new Cart();
