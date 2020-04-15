@@ -41,7 +41,7 @@ class CartServiceImplTest {
         //when
         service.addProductToCart(cart, (long) 12, 3);
         //then
-        assertThat(cart.getCartItemByProductName("tested").getQuantity() == 3);
+        assertThat(cart.getCartItemByProductName("tested").getQuantity()).isEqualTo(3);
     }
 
     @Test
@@ -67,7 +67,7 @@ class CartServiceImplTest {
         //when
         service.changeProductQuantity(cart, (long) 12, 3);
         //then
-        assertThat(cart.getCartItemByProductName("tested").getQuantity() == 6);
+        assertThat(cart.getCartItemByProductName("tested").getQuantity()).isEqualTo(3);
     }
 
     @Test

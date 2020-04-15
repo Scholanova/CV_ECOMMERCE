@@ -2,9 +2,13 @@ package com.scholanova.ecommerce.order.entity;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.scholanova.ecommerce.cart.entity.Cart;
-import com.sun.xml.bind.v2.TODO;
+import com.scholanova.ecommerce.cart.entity.CartItem;
+import com.scholanova.ecommerce.order.exception.NotAllowedException;
+import com.scholanova.ecommerce.order.exception.IllegalArgException;
 
 import javax.persistence.*;
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.sql.Date;
 
 @Entity(name="orders")
@@ -31,24 +35,49 @@ public class Orders {
     public Orders() {
     }
 
-    public void createOrder(){
-        //TODO
+    public static Orders createOrder(Cart cart) throws NotAllowedException {
+        Orders order = new Orders();
+        order.setCart(cart);
+        order.setStatus(OrderStatus.CREATED);
+
+        return order;
     }
 
-    public void checkout(){
-        //TODO
+    public void checkout() throws NotAllowedException, IllegalArgException {
+        if (this.getStatus() == OrderStatus.CLOSED){
+            throw new NotAllowedException("Order is CLOSED");
+        }
+
+        int totalQuantity = 0;
+        if (this.getCart() != null) {
+            for (CartItem item: this.getCart().getCartItems()) {
+                totalQuantity = totalQuantity + item.getQuantity();
+            }
+        }
+
+        if (this.cart != null && totalQuantity == 0) {
+            throw new IllegalArgException("Order contain 0 quantity of item");
+        }
+        this.issueDate = new Date(System.currentTimeMillis());
+        this.status = OrderStatus.PENDING;
     }
 
-    public void getDiscount(){
-        //TODO
+    public BigDecimal getDiscount(){
+        //5/total
+        BigDecimal totalPrice = this.getCart().getTotalPrice();
+        if (totalPrice.compareTo(BigDecimal.valueOf(100)) < 0) {
+            return BigDecimal.valueOf(0);
+        }
+
+        return BigDecimal.valueOf(5).multiply(totalPrice).divide(BigDecimal.valueOf(100), 2, RoundingMode.HALF_UP);
     }
 
-    public void getOrderPrice(){
-        //TODO
+    public BigDecimal getOrderPrice(){
+        return this.getCart().getTotalPrice().subtract(this.getDiscount());
     }
 
     public void close(){
-        //TODO
+        this.setStatus(OrderStatus.CLOSED);
     }
 
 
@@ -78,7 +107,10 @@ public class Orders {
 
     public Cart getCart() {return cart;}
 
-    public void setCart(Cart cart) {
+    public void setCart(Cart cart) throws NotAllowedException {
+        if (this.getStatus() == OrderStatus.CLOSED) {
+            throw new NotAllowedException("closed cart");
+        }
         this.cart = cart;
     }
 }
